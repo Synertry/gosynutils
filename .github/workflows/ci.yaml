@@ -1,0 +1,222 @@
+# Runner intensive tests and analysis
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GOPROXY: https://proxy.golang.org
+  GO111MODULE: on
+
+# Cancel any in-progress CI runs for a PR if it is updated
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  precheck: # Skip CI if only a README.md is changed, but mark as successful so PR succeeds to protected main branch. Huge bloat logic, because GitHub does not support exceptions, in that case. Also check if the granted label status/pr-test-passed is present.
+    name: Precheck
+    runs-on: ubuntu-latest
+    outputs:
+      doc_only: ${{ steps.diff_check.outputs.output }}
+      is_dependabot: ${{ steps.detect_dependabot.outputs.is_dependabot }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 2 # fetch last two commits to compare
+
+      - name: Check diff
+        id: diff_check
+        run: |
+          # Diff HEAD with the previous commit
+          diff=$(git diff --name-only HEAD^ HEAD)
+              
+          # Get count of changed doc files
+          docs_change_count=$(echo "$diff" | grep -E -e "\.md$" -e "LICENSE$" -e "CODEOWNERS$" | wc -l)
+
+          # Evaluate if only docs were changed
+          # Check that "$diff" is non-empty (-n returns true if the string length is non-zero)
+          # and that "$docs_change_count" equals the number of lines in "$diff" (echo "$diff" | wc -l).
+
+          # If both conditions are true, all detected changes are documentation-only.
+          if [ -n "$diff" ] && [ "$docs_change_count" -eq "$(echo "$diff" | wc -l)" ]; then
+              echo "output=true" >> $GITHUB_OUTPUT
+          else
+              echo "output=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verify Dependabot signatures
+        id: detect_dependabot
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          LINE_SIGNED="Signed-off-by: dependabot[bot] <support@github.com>"
+          LINE_COAUTHORED="Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>"
+          
+          # -qFx for exact line matches, -qF for substring match
+          if echo "$COMMIT_MSG" | grep -qFx "$LINE_SIGNED" && \
+            echo "$COMMIT_MSG" | grep -qFx "$LINE_COAUTHORED" && \
+            echo "$COMMIT_MSG" | grep -qF "Bump"; then
+            echo "Strict Dependabot signature and Bump keyword matched."
+            echo "is_dependabot=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Signature or keyword match failed."
+            echo "is_dependabot=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  lint:
+    name: Lint
+    needs: precheck
+    if: needs.precheck.outputs.doc_only != 'true' && needs.precheck.outputs.is_dependabot != 'true'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/lint.yaml
+
+  test:
+    name: Test {{ matrix.go-version }} on ${{ matrix.os }}
+    needs: lint
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: true # Cancel all jobs if one fails
+      matrix:
+        go-version: ['1.24.x', '1.25.x', '1.26.x']
+        include:
+          - os: ubuntu-latest
+            go-build: ~/.cache/go-build
+          - os: macos-latest
+            go-build: ~/Library/Caches/go-build
+          - os: windows-latest
+            go-build: ~/AppData/Local/go-build
+    # Call the reusable workflow with matrix variables
+    uses: ./.github/workflows/test.yaml
+    with:
+      os: ${{ matrix.os }}
+      go-version: ${{ matrix.go-version }}
+      cache-path: ${{ matrix.go-build }}
+      # No 'ref' passed implies default (checkout current commit), which is correct for Push
+
+  review:
+    name: Review
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      # CodeQL requires this for all workflows
+      security-events: write
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
+      # for Dependency Review, comment-summary-in-pr: true
+      pull-requests: write
+    strategy:
+      matrix:
+        go-version: ['1.26.x']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v6.2.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          check-latest: true
+          cache: true
+          cache-dependency-path: |
+            **/go.sum
+            **/go.mod
+
+      - name: Cache go setup deps
+        uses: actions/cache@v5.0.3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4.31.2
+        with:
+          languages: go
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4.31.2
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4.8.2
+        with:
+          base-ref: refs/heads/release
+          head-ref: refs/heads/main
+          fail-on-severity: high
+          # comment-summary-in-pr: true
+          # deny-licenses: LGPL-2.0, BSD-2-Clause, Apache-1.1, Apache-2.0
+          # allow-licenses: MIT, BSL-1.0, BSD-3-CLAUSE, GPL-3.0
+          allow-licenses: BSL-1.0
+
+      - name: Generate Code Coverage
+        run: go test -v -race -vet off -covermode atomic -coverprofile ${{ github.workspace }}/coverage.out ./...
+
+      - name: Report test coverage to Codecov
+        uses: codecov/codecov-action@v5.5.2
+        with:
+          directory: ${{ github.workspace }}
+          files: coverage.out
+          flags: unittests,go-${{ matrix.go-version }},
+          name: gosynutils-${{ github.head_ref }}-${{ github.sha }}-coverage
+          fail_ci_if_error: true
+          verbose: true
+
+  integrate:
+    name: Integrate to release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    needs:
+      - precheck
+      - review
+    if: ${{ always() && contains(needs.*.result, 'success') && !(contains(needs.*.result, 'failure')) }}
+    env:
+      GH_TOKEN: ${{ secrets.PAT }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Create Pull Request
+        if: ${{ needs.precheck.outputs.is_dependabot != 'true' }}
+        run: |
+          # Explicitly fetch the target branch required for the --fill diff calculation
+          git fetch origin release
+
+          # 1. Check if a PR already exists to avoid errors
+          # Returns the count of open PRs from main -> release
+          existing_pr=$(gh pr list --base release --head main --state open --json number --jq length)
+          
+          if [ "$existing_pr" -gt 0 ]; then
+            echo "PR already exists. Skipping creation."
+          else
+            echo "Creating PR from main to release..."
+            gh pr create \
+              --base release \
+              --head main \
+              --fill \
+              --label "workflow/auto-pr"
+          fi
+
+      - name: Commit to release
+        if: ${{ needs.precheck.outputs.is_dependabot == 'true' }}
+        run: |
+          echo "🤖 Dependabot Bump. Pushing to release..."
+          # Push the currently checked-out commit (main) directly to release
+            git push origin HEAD:refs/heads/release

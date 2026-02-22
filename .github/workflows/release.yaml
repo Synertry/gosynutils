@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - release
+
+permissions:
+  contents: write # Required to push tags and create releases
+
+jobs:
+  release:
+    name: Tag & Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0 # fetch all history
+          filter: blob:none # exclude file contents for faster checkout
+
+      - name: Setup Go
+        uses: actions/setup-go@v6.2.0
+        with:
+          go-version: '^1'
+          check-latest: true
+
+      # ⚡ Fast: Calculates version without compiling anything
+      # Uses: https://github.com/marketplace/actions/git-automatic-semantic-versioning
+      - name: Calculate Next Version
+        id: semver
+        uses: PaulHatch/semantic-version@v6.0.1
+        with:
+          # Default to patch if no pattern matches (e.g., fix:, chore:, etc.)
+          # Search for the last tag across all commits (safer)
+          search_commit_body: true
+          enable_prerelease_mode: true
+          ignore_commits_pattern: '^docs|^chore|^style|^refactor|^perf|^test|^ci|^build|^revert'
+
+      - name: Create & Push Tag
+        env:
+          NEXT_TAG: ${{ steps.semver.outputs.tag }}
+          GH_TOKEN: ${{ secrets.PAT }} # Personal Access Token with repo permissions for pushing tags and creating releases
+        run: |
+          # Check if tag already exists (idempotency)
+          if git rev-parse "$NEXT_TAG" >/dev/null 2>&1; then
+            echo "Tag $NEXT_TAG already exists. Skipping."
+            exit 0
+          fi
+
+          # 1. Create the Git Tag
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
+          git push origin "$NEXT_TAG"
+
+          # 2. Create GitHub Release (using gh CLI)
+          # --generate-notes auto-fills the changelog based on PRs/Commits
+          echo "Creating GitHub Release..."
+          gh release create "$NEXT_TAG" --generate-notes --title "$NEXT_TAG"

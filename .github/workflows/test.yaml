@@ -1,0 +1,84 @@
+name: Test
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+        default: 'ubuntu-latest'
+        description: "Runner OS (e.g., ubuntu-latest)"
+      go-version:
+        required: false
+        type: string
+        description: "Specific Go version (e.g., 1.24.x)"
+      go-version-file:
+        required: false
+        type: string
+        description: "Path to go.mod file"
+      cache-path:
+        required: true
+        type: string
+        description: "Path for Go build cache"
+      ref:
+        required: false
+        type: string
+        description: "Git ref to checkout"
+
+jobs:
+  test:
+    name: Test Go code on ${{ inputs.os }} @ Go ${{ inputs.go-version }}
+    runs-on: ${{ inputs.os }}
+    # Ensure consistent shell handling for paths across OS (Windows/Linux)
+    defaults:
+      run:
+        shell: bash
+    env:
+      GOPROXY: https://proxy.golang.org
+      GO111MODULE: on
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v6.2.0
+        with:
+          go-version: ${{ inputs.go-version }}
+          go-version-file: ${{ inputs.go-version-file }}
+          check-latest: true
+          cache: true
+          cache-dependency-path: |
+            **/go.sum
+            **/go.mod
+
+      - name: Restore go packages
+        id: cache
+        uses: actions/cache/restore@v5.0.3
+        with:
+          path: |
+            ${{ inputs.cache-path }}
+            ~/go/pkg/mod
+          key: cache-${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Display Go version
+        run: go version
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: go get ./...
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Save go packages
+        uses: actions/cache/save@v5.0.3
+        with:
+          path: |
+            ${{ inputs.cache-path }}
+            ~/go/pkg/mod
+          key: ${{ steps.cache.outputs.cache-primary-key }}
+
+      - name: Test with Go CLI
+        run: go test -race ./...

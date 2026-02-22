@@ -1,0 +1,66 @@
+# Lightweight testing of PRs before the expensive workflows get triggered
+name: PR Test
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'LICENSE'
+      - '.github/CODEOWNERS'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint.yaml
+    permissions:
+      contents: read
+
+  test:
+    name: Test
+    needs: lint
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: ./.github/workflows/test.yaml
+    with:
+      os: ubuntu-latest
+      go-version-file: 'go.mod'        # Use version from file
+      cache-path: ~/.cache/go-build    # Standard Linux path
+      ref: ${{ github.head_ref }}      # Explicitly checkout PR head
+
+  label:
+    name: Grant Label
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      LABELS: status/pr-test-passed
+    steps:
+      # Adds label 'status/pr-test-passed' when previous steps passed
+      - name: Adds passed label
+        run: gh pr edit ${{ env.PR_NUMBER }} --add-label "${{ env.LABELS }}"
+
+  dependabot: # Auto-merge Dependabot bumps if tests pass
+    name: Dependabot auto-merge
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.PAT }}
