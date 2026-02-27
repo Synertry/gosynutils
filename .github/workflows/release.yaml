@@ -18,6 +18,7 @@ jobs:
         with:
           fetch-depth: 0 # fetch all history
           filter: blob:none # exclude file contents for faster checkout
+          token: ${{ secrets.PAT }}
 
       - name: Setup Go
         uses: actions/setup-go@v6.2.0
