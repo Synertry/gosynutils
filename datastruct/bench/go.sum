@@ -1,0 +1,13 @@
+github.com/Synertry/gosynutils v0.0.4 h1:FKIC6EU003mOwBxTC5rW35l73J6cDpCitXgBDvaqb6s=
+github.com/Synertry/gosynutils v0.0.4/go.mod h1:q+bNELgolH0IdV1aM5X2rgV9sAMG6D+3UiPukxHl8iE=
+github.com/dghubble/trie v0.1.0 h1:kJnjBLFFElBwS60N4tkPvnLhnpcDxbBjIulgI8CpNGM=
+github.com/dghubble/trie v0.1.0/go.mod h1:sOmnzfBNH7H92ow2292dDFWNsVQuh/izuD7otCYb1ak=
+github.com/hashicorp/go-immutable-radix v1.3.1 h1:DKHmCUm2hRBK510BaiZlwvpD40f8bJFeZnpfm2KLowc=
+github.com/hashicorp/go-immutable-radix v1.3.1/go.mod h1:0y9vanUI8NX6FsYoO3zeMjhV/C5i9g4Q3DwcSNZ4P60=
+github.com/hashicorp/go-uuid v1.0.0 h1:RS8zrF7PhGwyNPOtxSClXXj9HA8feRnJzgnI1RJCSnM=
+github.com/hashicorp/go-uuid v1.0.0/go.mod h1:6SBZvOh/SIDV7/2o3Jml5SYk/TvGqwFJ/bN7x4byOro=
+github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
+github.com/hashicorp/golang-lru v1.0.2 h1:dV3g9Z/unq5DpblPpw+Oqcv4dU/1omnb4Ok8iPY6p1c=
+github.com/hashicorp/golang-lru v1.0.2/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uGBxy+E8yxSoD4=
+github.com/sauerbraten/radix v0.0.0-20150210222551-4445e9cd8982 h1:5uxzTKgljXqGhmr0sjLKfRDuwxDFAVYl0S0SfOx5iGo=
+github.com/sauerbraten/radix v0.0.0-20150210222551-4445e9cd8982/go.mod h1:mRvyfb7TVKBjRZcwU4dvd7d4bCKoKykTSO23Rb39uWA=
