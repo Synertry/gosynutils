@@ -22,7 +22,7 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-var src = rand.NewSource(time.Now().UnixNano())
+var src = rand.NewSource(time.Now().UnixNano()) //nolint:gochecknoglobals // we need this for the random uniqueness
 
 // String generates a random string of length n
 // Source: https://stackoverflow.com/a/31832326/5516320

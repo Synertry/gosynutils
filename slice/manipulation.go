@@ -21,7 +21,7 @@ func RemoveIndex[T comparable](s []T, idx int) []T {
 // RemoveElements removes all occurrences of the specified element from the slice.
 // It iterates through the slice and uses RemoveIndex to remove each occurrence.
 func RemoveElements[T comparable](s []T, e T) []T {
-	for i, _ := range s {
+	for i := range s {
 		for s[i] == e { // ensures to remove all occurrences of the element even if it's get fed from the tail consecutively
 			s = RemoveIndex(s, i)
 			if i >= len(s) {

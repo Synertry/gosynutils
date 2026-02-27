@@ -11,7 +11,7 @@ package file_test //nolint:cyclop // This unfortunately needs this level of comp
 import (
 	"errors"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/Synertry/gosynutils/file"
@@ -20,10 +20,7 @@ import (
 // TestTouchFile tests the TouchFile function that it ensures a file exists.
 // So it is like the Unix touch command.
 func TestTouchFile(t *testing.T) {
-	var pathTempFile = path.Join(os.TempDir(), "tempfile_for_touchfile_test.tmp")
-
-	// Ensure the file does not exist before the test
-	_ = os.Remove(pathTempFile)
+	var pathTempFile = filepath.Join(t.TempDir(), "tempfile_for_touchfile_test.tmp")
 
 	t.Run("TouchFile", func(t *testing.T) {
 		err := file.TouchFile(pathTempFile)
@@ -33,12 +30,9 @@ func TestTouchFile(t *testing.T) {
 		}
 
 		// Check if the file now exists
-		if _, err := os.Stat(pathTempFile); errors.Is(err, os.ErrNotExist) {
+		if _, err = os.Stat(pathTempFile); errors.Is(err, os.ErrNotExist) {
 			t.Errorf("File %s does not exist after TouchFile", pathTempFile)
 			return
 		}
 	})
-
-	// Clean up
-	_ = os.Remove(pathTempFile)
 }

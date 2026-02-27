@@ -21,7 +21,7 @@ package slice
 //goland:noinspection GoDeprecation
 //nolint:godoclint // We showcase a legacy function for educational purposes
 func Contains[T comparable](s []T, e T) bool {
-	for _, v := range s {
+	for _, v := range s { //nolint:modernize // We showcase a legacy function for educational purposes
 		if v == e {
 			return true
 		}

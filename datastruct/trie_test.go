@@ -102,8 +102,7 @@ func getTestTableTrie() map[string]struct {
 	}
 }
 
-//nolint:gocognit
-func coreTestTrie(t *testing.T, safe bool, tests map[string]struct {
+func coreTestTrie(t *testing.T, safe bool, tests map[string]struct { //nolint:gocognit
 	words     []string
 	search    string
 	want      bool

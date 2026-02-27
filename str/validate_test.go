@@ -15,6 +15,7 @@ import (
 )
 
 func TestIsASCII(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		input string
 		want  bool

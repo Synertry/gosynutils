@@ -9,16 +9,15 @@
 package file_test
 
 import (
-	"log/slog"
 	"os"
+	"path"
 	"path/filepath"
 	"testing"
 
 	"github.com/Synertry/gosynutils/file"
 )
 
-//nolint:gocognit
-func TestGetStat(t *testing.T) {
+func TestGetStat(t *testing.T) { //nolint:gocognit
 	tests := map[string]struct {
 		setup     func(dir string) (string, error)
 		wantSize  int64
@@ -81,16 +80,10 @@ func TestGetStat(t *testing.T) {
 		},
 	}
 
-	dirTest := filepath.Join(os.TempDir(), "TestGetStats")
+	dirTest := path.Join(t.TempDir(), "TestGetStats")
 	if err := os.MkdirAll(dirTest, 0755); err != nil {
-		slog.Error("failed to create test directory:", "err", err)
-		return
+		t.Fatalf("failed to create test directory: %v", err)
 	}
-	defer func(path string) {
-		if err := os.RemoveAll(path); err != nil {
-			slog.Info("failed to clean up test directory", "err", err)
-		}
-	}(dirTest)
 
 	for name, tc := range tests {
 		var path string

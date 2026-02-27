@@ -15,20 +15,21 @@ import (
 	"path/filepath"
 )
 
-var (
-	// PathExe is the path to the executable file
-	PathExe string
-	// PathExeDir is the directory containing the executable file
-	// it depends on PathExe
-	PathExeDir string
-)
+// GetPathExe returns the path to the executable file
+func GetPathExe() string {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
-func init() {
-	var err error
-	PathExe, err = os.Executable()
+	pathExe, err := os.Executable()
 	if err != nil {
-		slog.Error("failed to get executable path", "error", err)
-		return
+		logger.Error("failed to get executable path", "error", err)
+		return ""
 	}
-	PathExeDir = filepath.Dir(PathExe)
+
+	return pathExe
+}
+
+// GetPathExeDir returns the directory containing the executable file
+// it depends on GetPathExe
+func GetPathExeDir() string {
+	return filepath.Dir(GetPathExe())
 }

@@ -121,10 +121,10 @@ func (t *Trie) Delete(word string) {
 	for i := len(nodesStack) - 1; i >= 0; i-- {
 		if nodeCurrent.isEnd || !t.isLeaf(nodeCurrent) {
 			break // If the current node has children, we cannot delete it
-		} else {
-			nodesStack[i].children[word[i]-'a'] = nil // Remove the child node
-			nodeCurrent = nodesStack[i]               // Move up the stack
 		}
+
+		nodesStack[i].children[word[i]-'a'] = nil // Remove the child node
+		nodeCurrent = nodesStack[i]               // Move up the stack
 	}
 }
 

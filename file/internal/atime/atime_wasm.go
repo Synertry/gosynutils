@@ -18,5 +18,5 @@ func timespecToTime(sec, nsec int64) time.Time {
 
 func atime(fi os.FileInfo) time.Time {
 	stat := fi.Sys().(*syscall.Stat_t)
-	return timespecToTime(stat.Atime, stat.AtimeNsec)
+	return timespecToTime(stat.Atime, stat.AtimeNsec) //nolint:errcheck // original code
 }

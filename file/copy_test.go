@@ -10,7 +10,6 @@ package file_test
 
 import (
 	"errors"
-	"log/slog"
 	"os"
 	"path"
 	"testing"
@@ -18,8 +17,7 @@ import (
 	"github.com/Synertry/gosynutils/file"
 )
 
-//nolint:gocognit
-func TestCopy(t *testing.T) {
+func TestCopy(t *testing.T) { //nolint:gocognit
 	tests := map[string]struct {
 		src, dst string
 		success  bool
@@ -52,18 +50,17 @@ func TestCopy(t *testing.T) {
 		},
 	}
 
-	dirTest := path.Join(os.TempDir(), "TestCopy")
+	dirTest := path.Join(t.TempDir(), "TestCopy")
 
 	// Ensure dirTest exists
 	err := os.MkdirAll(dirTest, os.ModeDir|os.ModePerm)
 	if err != nil {
-		slog.Error("failed to create test directory:", "err", err)
-		return
+		t.Fatalf("failed to create test directory: %v", err)
 	}
 
 	for name, tc := range tests {
 		var pErr error
-		//var fSrc *os.File
+		// var fSrc *os.File
 		strInputPath := path.Join(dirTest, tc.src)
 		strOutputPath := path.Join(dirTest, tc.dst)
 
@@ -92,7 +89,7 @@ func TestCopy(t *testing.T) {
 		if tc.src != "" && tc.src != "invalid" {
 			pErr = os.Remove(strInputPath)
 			if pErr != nil {
-				slog.Info("failed to remove source file", "err", pErr)
+				t.Logf("failed to remove source file: %v", pErr)
 				continue
 			}
 		}
@@ -100,15 +97,9 @@ func TestCopy(t *testing.T) {
 		if tc.dst != "" && tc.success && tc.src != tc.dst {
 			pErr = os.Remove(strOutputPath)
 			if pErr != nil {
-				slog.Info("failed to remove destination file", "err", pErr)
+				t.Logf("failed to remove destination file: %v", pErr)
 				continue
 			}
 		}
-	}
-
-	// clean up test directory
-	err = os.RemoveAll(dirTest)
-	if err != nil {
-		slog.Info("failed to remove test directory", "err", err)
 	}
 }
