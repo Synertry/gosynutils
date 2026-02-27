@@ -168,6 +168,7 @@ jobs:
       - name: Report test coverage to Codecov
         uses: codecov/codecov-action@v5.5.2
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ github.workspace }}
           files: coverage.out
           flags: unittests,go-${{ matrix.go-version }},
