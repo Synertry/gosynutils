@@ -9,7 +9,7 @@
 package gen_test
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/Synertry/gosynutils/gen"

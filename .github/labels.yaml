@@ -44,7 +44,6 @@
   - changed-files:
       - any-glob-to-any-file:
           - '**/*_test.go'
-          - '!datastruct/bench/**/*'
 
 # Side (smaller side repos)
 'area/side':
