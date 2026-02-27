@@ -12,9 +12,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Synertry/gosynutils/math/integer"
-
 	"github.com/Synertry/gosynutils/gen"
+	"github.com/Synertry/gosynutils/math/integer"
 )
 
 func TestString_Len(t *testing.T) {
@@ -51,7 +50,7 @@ func TestString_Len(t *testing.T) {
 
 func TestString_Pattern(t *testing.T) {
 	// random := gen.GetRand()
-	sLen := gen.GetRand().Intn(100)
+	sLen := gen.GetRand().IntN(100)
 	str := gen.String(sLen)
 	for i, r := range str {
 		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') {

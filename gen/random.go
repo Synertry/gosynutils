@@ -10,17 +10,15 @@ package gen
 
 import (
 	crand "crypto/rand"
-	"math/big"
-	"math/rand" //nolint:depguard // legacy reasons, TODO: upgrade to v2
+	"math/rand/v2"
 )
 
 // GetRand returns a cryptographically secure random number source
 func GetRand() *rand.Rand {
-	// get random seed from crypto/rand
-	cnum, err := crand.Int(crand.Reader, big.NewInt(1<<63-1))
-	if err != nil {
-		// log.Panic(err)
-		panic(err)
-	}
-	return rand.New(rand.NewSource(cnum.Int64())) //nolint:gosec // the source is cryptographically secure
+	var seed [32]byte
+	crand.Read(seed[:]) //nolint:errcheck,gosec // no error handling is necessary, as Read always succeeds.
+
+	// https://go.dev/blog/chacha8rand#the-chacha8rand-generator
+	chacha := rand.NewChaCha8(seed)
+	return rand.New(chacha) //nolint:gosec // 8-round form ChaCha8 is secure too
 }
