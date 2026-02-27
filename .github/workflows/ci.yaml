@@ -152,7 +152,7 @@ jobs:
         uses: github/codeql-action/analyze@v4.32.4
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@v4.8.2
+        uses: actions/dependency-review-action@v4.8.3
         with:
           base-ref: refs/heads/release
           head-ref: refs/heads/main
