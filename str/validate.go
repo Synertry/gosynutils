@@ -13,7 +13,7 @@ import "unicode"
 // IsASCII checks if all characters in the string are ASCII characters
 // Source: https://stackoverflow.com/a/53069799/5516320
 func IsASCII(s string) bool {
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		if s[i] > unicode.MaxASCII {
 			return false
 		}

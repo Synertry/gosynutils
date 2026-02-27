@@ -23,15 +23,18 @@ func TestStat(t *testing.T) {
 		return
 	}
 	pathExeDir := filepath.Dir(pathExe)
+
 	t.Run("PathExe", func(t *testing.T) {
-		if pathExe != self.PathExe {
-			t.Errorf("expected: %q, got: %q\n", pathExe, self.PathExe)
+		selfPathExe := self.GetPathExe()
+		if pathExe != selfPathExe {
+			t.Errorf("expected: %q, got: %q\n", pathExe, selfPathExe)
 			return
 		}
 	})
 	t.Run("PathExeDir", func(t *testing.T) {
-		if pathExeDir != self.PathExeDir {
-			t.Errorf("expected: %q, got: %q\n", pathExeDir, self.PathExeDir)
+		selfPathExeDir := self.GetPathExeDir()
+		if pathExeDir != selfPathExeDir {
+			t.Errorf("expected: %q, got: %q\n", pathExeDir, selfPathExeDir)
 			return
 		}
 	})

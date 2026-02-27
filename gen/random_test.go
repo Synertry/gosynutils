@@ -9,20 +9,11 @@
 package gen_test
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"testing"
 
 	"github.com/Synertry/gosynutils/gen"
 )
-
-// TestRandom tests if the variable gen.Random is a *[rand.Rand] object
-func TestRandom(t *testing.T) {
-	t.Run("Random", func(t *testing.T) {
-		if !isTypeRand(gen.Random) {
-			t.Errorf("expected: type *rand.Rand, got %T\n", gen.Random)
-		}
-	})
-}
 
 // TestGetRand tests the GetRand function to check whether we successfully created a *[rand.Rand] object
 // and that it is not nil. This is a basic test to ensure the function works as
@@ -36,7 +27,7 @@ func TestGetRand(t *testing.T) {
 }
 
 // isTypeRand is a private helper function to check if the provided interface is of type *[rand.Rand]
-func isTypeRand(t interface{}) bool {
+func isTypeRand(t any) bool {
 	switch t.(type) {
 	case *rand.Rand:
 		return true

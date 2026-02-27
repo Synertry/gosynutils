@@ -14,6 +14,6 @@ import (
 
 func PrettyPrint(v any) string {
 	s, _ := json.MarshalIndent(v, "", "\t")
-	//fmt.Println(string(s))
+	// fmt.Println(string(s))
 	return string(s)
 }

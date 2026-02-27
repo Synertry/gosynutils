@@ -1,0 +1,67 @@
+# Workflow to notify maintainers of a new release, when a tag on the release branch is published. We send it to a webhook in Discord for now
+name: Release Notification
+
+on:
+  release:
+    types:
+        - published
+
+jobs:
+  discord:
+    name: Send Discord Notification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6.0.2
+
+      - name: Get Release Details
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: release_data
+        run: |
+          # Fetch the latest release info using GitHub CLI
+          # We grab the tag, url, and the generated release notes
+          gh release view --json tagName,url,body > release.json
+          
+          echo "Release data fetched."
+
+      - name: Send Discord Notification
+        run: |
+          # 1. Read data from the JSON file we just created
+          TAG=$(jq -r .tagName release.json)
+          URL=$(jq -r .url release.json)
+          NOTES=$(jq -r .body release.json)
+          
+          # 2. Truncate notes if they are too long for Discord (Limit is 4096 chars for description)
+          # We keep the first 2000 characters to be safe and clean
+          NOTES_TRUNCATED=${NOTES:0:2000}
+          if [ ${#NOTES} -gt 2000 ]; then
+            NOTES_TRUNCATED="${NOTES_TRUNCATED}...\n\n*(Full changelog truncated)*"
+          fi
+
+          # 3. Build the JSON Payload safely using jq
+          # This handles escaping quotes, newlines, etc. automatically
+          jq -n \
+            --arg title "🚀 New Release: $TAG" \
+            --arg desc "$NOTES_TRUNCATED" \
+            --arg url "$URL" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{
+              username: "Release Bot",
+              avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+              embeds: [{
+                title: $title,
+                description: $desc,
+                url: $url,
+                color: 5763719,
+                timestamp: $timestamp,
+                footer: {
+                  text: "Deployed via GitHub Actions"
+                }
+              }]
+            }' > payload.json
+
+          # 4. Send to Discord
+          curl -H "Content-Type: application/json" \
+               -d @payload.json \
+               "${{ secrets.DISCORD_WEBHOOK }}"

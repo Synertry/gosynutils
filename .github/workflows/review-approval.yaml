@@ -80,6 +80,7 @@ jobs:
         with:
           # A full clone is required to ensure the local runner has the correct references to push
           fetch-depth: 0
+          token: ${{ secrets.PAT }}
 
       - name: Fast-forward release branch
         if: steps.validate.outputs.validated_sha != ''

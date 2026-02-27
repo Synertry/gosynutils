@@ -32,10 +32,10 @@ func TestConcat(t *testing.T) {
 		"Multiple": {input: []string{"a", "b", "c"}, want: "abc"},
 	}
 
-	for i := 0; i < maxTestArrLen; i++ {
+	for i := range maxTestArrLen {
 		input := make([]string, i)
 		var want bytes.Buffer
-		for j := 0; j < i; j++ {
+		for j := range i {
 			input[j] = gen.String(i)
 			want.WriteString(input[j])
 		}

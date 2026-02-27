@@ -84,7 +84,7 @@ jobs:
     strategy:
       fail-fast: true # Cancel all jobs if one fails
       matrix:
-        go-version: ['1.24.x', '1.25.x', '1.26.x']
+        go-version: ['1.26.x']
         include:
           - os: ubuntu-latest
             go-build: ~/.cache/go-build
@@ -158,9 +158,9 @@ jobs:
           head-ref: refs/heads/main
           fail-on-severity: high
           # comment-summary-in-pr: true
-          # deny-licenses: LGPL-2.0, BSD-2-Clause, Apache-1.1, Apache-2.0
-          # allow-licenses: MIT, BSL-1.0, BSD-3-CLAUSE, GPL-3.0
-          allow-licenses: BSL-1.0
+          allow-licenses: MIT, BSL-1.0, BSD-3-Clause, BSD-2-Clause, Apache-2.0, ISC, Zlib, MPL-2.0
+          # deny-licenses are deprecated, but left here for reference of bad licenses to avoid
+          # deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later, LGPL-2.1-only, LGPL-2.1-or-later, LGPL-3.0-only, LGPL-3.0-or-later, SSPL-1.0
 
       - name: Generate Code Coverage
         run: go test -v -race -vet off -covermode atomic -coverprofile ${{ github.workspace }}/coverage.out ./...
@@ -168,6 +168,7 @@ jobs:
       - name: Report test coverage to Codecov
         uses: codecov/codecov-action@v5.5.2
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ github.workspace }}
           files: coverage.out
           flags: unittests,go-${{ matrix.go-version }},
@@ -191,7 +192,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6.0.2
         with:
-          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
 
       - name: Create Pull Request
         if: ${{ needs.precheck.outputs.is_dependabot != 'true' }}

@@ -12,9 +12,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Synertry/gosynutils/math/integer"
-
 	"github.com/Synertry/gosynutils/gen"
+	"github.com/Synertry/gosynutils/math/integer"
 )
 
 func TestString_Len(t *testing.T) {
@@ -32,7 +31,7 @@ func TestString_Len(t *testing.T) {
 	}
 
 	// Generate tests for random strings of varying lengths
-	for i := 0; i < maxTestArrLen; i++ {
+	for i := range maxTestArrLen {
 		input := gen.String(i)
 		tests["Random"+strconv.Itoa(i)] = test{input: input, want: len(input)}
 	}
@@ -50,8 +49,8 @@ func TestString_Len(t *testing.T) {
 }
 
 func TestString_Pattern(t *testing.T) {
-	//random := gen.GetRand()
-	sLen := gen.GetRand().Intn(100)
+	// random := gen.GetRand()
+	sLen := gen.GetRand().IntN(100)
 	str := gen.String(sLen)
 	for i, r := range str {
 		if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') {
@@ -62,21 +61,21 @@ func TestString_Pattern(t *testing.T) {
 	}
 }
 
-func TestString_Race(t *testing.T) {
+func TestString_Race(_ *testing.T) {
 	const numGoroutines = 10
 	const numIterations = 100
 
 	done := make(chan bool)
-	for i := 0; i < numGoroutines; i++ {
+	for range numGoroutines {
 		go func() {
-			for j := 0; j < numIterations; j++ {
+			for range numIterations {
 				_ = gen.String(10)
 			}
 			done <- true
 		}()
 	}
 
-	for i := 0; i < numGoroutines; i++ {
+	for range numGoroutines {
 		<-done
 	}
 }

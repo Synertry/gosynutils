@@ -12,7 +12,7 @@ import "os"
 
 // TouchFile creates a file if it does not exist, otherwise opens it for reading
 func TouchFile(name string) error {
-	file, err := os.OpenFile(name, os.O_RDONLY|os.O_CREATE, 0664)
+	file, err := os.OpenFile(name, os.O_RDONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}

@@ -17,8 +17,8 @@ import (
 func Check(path string) (pathExits bool, err error) {
 	if _, err = os.Stat(path); err == nil { // exists
 		pathExits = true
-	} else if errors.Is(err, os.ErrNotExist) { // does not exist
-		pathExits = false
+	} else if errors.Is(err, os.ErrNotExist) { //nolint:gocritic // we need both branches to display that there would be a logic difference
+		pathExits = false // does not exist
 	} else { // possible permission issue
 		pathExits = false
 		// Schrödinger: file may or may not exist. See err for details.
