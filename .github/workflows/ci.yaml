@@ -84,7 +84,7 @@ jobs:
     strategy:
       fail-fast: true # Cancel all jobs if one fails
       matrix:
-        go-version: ['1.24.x', '1.25.x', '1.26.x']
+        go-version: ['1.26.x']
         include:
           - os: ubuntu-latest
             go-build: ~/.cache/go-build
@@ -191,7 +191,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6.0.2
         with:
-          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
 
       - name: Create Pull Request
         if: ${{ needs.precheck.outputs.is_dependabot != 'true' }}

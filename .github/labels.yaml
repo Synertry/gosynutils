@@ -34,7 +34,7 @@
 # Source Code
 'area/source':
   - changed-files:
-      - any-glob-to-any-file:
+      - all-globs-to-any-file:
           - '**/*.go'
           - '!**/*_test.go'
           - '!datastruct/bench/**/*'
@@ -42,8 +42,9 @@
 # Tests
 'area/tests':
   - changed-files:
-      - any-glob-to-any-file:
+      - all-globs-to-any-file:
           - '**/*_test.go'
+          - '!datastruct/bench/**/*'
 
 # Side (smaller side repos)
 'area/side':
