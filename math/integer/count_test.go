@@ -49,10 +49,10 @@ func TestCountDigits(t *testing.T) {
 			want:  10,
 		},
 		// Leading zeros notify another base notation, here octal instead of decimal
-		//"leading zeros": {
-		//	input: 000123, // Leading zeros are ignored in integer representation
-		//	want:  3,      // Count of digits in 123
-		//},
+		// "leading zeros": {
+		// 	input: 000123, // Leading zeros are ignored in integer representation
+		// 	want:  3,      // Count of digits in 123
+		// },
 	}
 
 	for name, tc := range tests {

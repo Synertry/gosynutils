@@ -14,12 +14,6 @@ import (
 
 const threshold = 100 // This value needs to be discussed
 
-var runePool = sync.Pool{
-	New: func() interface{} {
-		return make([]rune, 0, threshold)
-	},
-}
-
 // Reverse returns the inverted string of s.
 // Implemented through slice inversion, directly
 // inverting bytes for small strings.
@@ -38,8 +32,14 @@ func Reverse(s string) string {
 		return string(bytes)
 	}
 
+	var runePool = sync.Pool{
+		New: func() any {
+			return make([]rune, 0, threshold)
+		},
+	}
+
 	// Inverting long strings with a rune Array
-	runes := runePool.Get().([]rune)
+	runes := runePool.Get().([]rune) //nolint:errcheck // derived from an example
 	runes = runes[:0]
 	runes = append(runes, []rune(s)...)
 
@@ -47,6 +47,6 @@ func Reverse(s string) string {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 	s = string(runes)
-	runePool.Put(runes)
+	runePool.Put(runes) //nolint:staticcheck // derived from an example
 	return s
 }

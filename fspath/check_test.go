@@ -9,7 +9,6 @@
 package fspath_test
 
 import (
-	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,24 +17,19 @@ import (
 	"github.com/Synertry/gosynutils/fspath"
 )
 
-func coreTestCheck(pathTmpDir string) (base string, dir string, pathfile string, non string) {
+func coreTestCheck(t *testing.T) (base string, dir string, pathfile string, non string) {
 	var err error
 
-	if base, err = os.MkdirTemp("", pathTmpDir); err != nil {
-		slog.Error("failed to create temp dir", "err", err)
-		return
-	}
+	base = t.TempDir()
 
 	pathfile = filepath.Join(base, "file.txt")
 	if err = file.TouchFile(pathfile); err != nil {
-		slog.Error("failed to create test file", "err", err)
-		return
+		t.Fatalf("failed to create test file: %v", err)
 	}
 
 	dir = filepath.Join(base, "subdir")
 	if err = os.Mkdir(dir, 0755); err != nil {
-		slog.Error("failed to create test dir", "err", err)
-		return
+		t.Fatalf("failed to create test dir: %v", err)
 	}
 
 	non = filepath.Join(base, "nonexistent")
@@ -43,14 +37,13 @@ func coreTestCheck(pathTmpDir string) (base string, dir string, pathfile string,
 }
 
 func TestCheck(t *testing.T) {
-
-	base, dir, pathFile, nonExistent := coreTestCheck("TestCheck")
+	base, dir, pathFile, nonExistent := coreTestCheck(t)
 	if nonExistent == "" {
 		t.Fatal("failed to create test files")
 	}
 	defer func(path string) {
 		if err := os.RemoveAll(path); err != nil {
-			slog.Info("failed to clean up test directory", "err", err)
+			t.Logf("failed to clean up test directory: %v", err)
 		}
 	}(base)
 
@@ -90,13 +83,13 @@ func TestCheck(t *testing.T) {
 }
 
 func TestCheckDir(t *testing.T) {
-	base, dir, pathFile, nonExistent := coreTestCheck("TestCheckDir")
+	base, dir, pathFile, nonExistent := coreTestCheck(t)
 	if nonExistent == "" {
 		t.Fatal("failed to create test files")
 	}
 	defer func(path string) {
 		if err := os.RemoveAll(path); err != nil {
-			slog.Info("failed to clean up test directory", "err", err)
+			t.Logf("failed to clean up test directory: %v", err)
 		}
 	}(base)
 
