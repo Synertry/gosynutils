@@ -16,7 +16,7 @@ import (
 // GetRand returns a cryptographically secure random number source
 func GetRand() *rand.Rand {
 	var seed [32]byte
-	crand.Read(seed[:]) //nolint:errcheck,gosec // no error handling is necessary, as Read always succeeds.
+	crand.Read(seed[:]) //nolint:gosec // no error handling is necessary, as Read always succeeds.
 
 	// https://go.dev/blog/chacha8rand#the-chacha8rand-generator
 	chacha := rand.NewChaCha8(seed)
