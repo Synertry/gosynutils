@@ -34,7 +34,7 @@ jobs:
           # Search for the last tag across all commits (safer)
           search_commit_body: true
           enable_prerelease_mode: true
-          ignore_commits_pattern: '^docs|^chore|^style|^refactor|^perf|^test|^ci|^build|^revert'
+          ignore_commits_pattern: '/^docs|^chore|^style|^refactor|^perf|^test|^ci|^build|^revert/'
 
       - name: Create & Push Tag
         env:
