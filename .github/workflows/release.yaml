@@ -28,7 +28,7 @@ jobs:
 
       - name: Calculate Next Version
         id: semver
-        uses: PaulHatch/semantic-version@v6.0.1
+        uses: PaulHatch/semantic-version@v6.0.2
         with:
           # Default to patch if no pattern matches (e.g., fix:, chore:, etc.)
           # Search for the last tag across all commits (safer)
