@@ -132,7 +132,7 @@ jobs:
             **/go.mod
 
       - name: Cache go setup deps
-        uses: actions/cache@v5.0.3
+        uses: actions/cache@v5.0.4
         with:
           path: |
             ~/.cache/go-build
@@ -166,7 +166,7 @@ jobs:
         run: go test -v -race -vet off -covermode atomic -coverprofile ${{ github.workspace }}/coverage.out ./...
 
       - name: Report test coverage to Codecov
-        uses: codecov/codecov-action@v5.5.2
+        uses: codecov/codecov-action@v5.5.3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ github.workspace }}
