@@ -55,7 +55,7 @@ jobs:
 
       - name: Restore go packages
         id: cache
-        uses: actions/cache/restore@v5.0.4
+        uses: actions/cache/restore@v5.0.5
         with:
           path: |
             ${{ inputs.cache-path }}
@@ -73,7 +73,7 @@ jobs:
         run: go mod verify
 
       - name: Save go packages
-        uses: actions/cache/save@v5.0.4
+        uses: actions/cache/save@v5.0.5
         with:
           path: |
             ${{ inputs.cache-path }}
