@@ -144,12 +144,12 @@ jobs:
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4.35.2
+        uses: github/codeql-action/init@v4.36.0
         with:
           languages: go
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4.35.2
+        uses: github/codeql-action/analyze@v4.36.0
 
       - name: Dependency Review
         uses: actions/dependency-review-action@v4.9.0
@@ -166,7 +166,7 @@ jobs:
         run: go test -v -race -vet off -covermode atomic -coverprofile ${{ github.workspace }}/coverage.out ./...
 
       - name: Report test coverage to Codecov
-        uses: codecov/codecov-action@v6.0.0
+        uses: codecov/codecov-action@v6.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ github.workspace }}
