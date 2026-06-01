@@ -8,7 +8,10 @@
 
 package datastruct
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 // AlphabetSize is the number of possible characters in the trie
 // we need this to keep the number of children per node low and constant
@@ -118,13 +121,13 @@ func (t *Trie) Delete(word string) {
 	nodeCurrent.isEnd = false // Mark the end of the word as false
 
 	// Clean up nodes if they are no longer needed
-	for i := len(nodesStack) - 1; i >= 0; i-- {
+	for i, node := range slices.Backward(nodesStack) {
 		if nodeCurrent.isEnd || !t.isLeaf(nodeCurrent) {
 			break // If the current node has children, we cannot delete it
 		}
 
-		nodesStack[i].children[word[i]-'a'] = nil // Remove the child node
-		nodeCurrent = nodesStack[i]               // Move up the stack
+		node.children[word[i]-'a'] = nil // Remove the child node
+		nodeCurrent = node               // Move up the stack
 	}
 }
 
