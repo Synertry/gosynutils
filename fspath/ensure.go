@@ -42,19 +42,21 @@ func EnsureDir(path string, perm os.FileMode) (created bool, err error) {
 		return false, ErrEmptyPath
 	}
 
-	var isDir bool
-	if isDir, err = CheckDir(path); isDir {
-		return false, nil // already a directory, nothing to do
-	}
-
-	// CheckDir reports an error for a path that does not exist yet, which is
-	// the ordinary case here, so distinguish that from a real failure.
-	var exists bool
-	if exists, err = Check(path); err != nil && exists {
-		return false, fmt.Errorf("fspath: inspect %q: %w", path, err)
-	}
-	if exists {
+	// One stat answers every case. Going through Check and CheckDir would stat
+	// the same path up to three times, since CheckDir calls Check and then
+	// stats again itself.
+	info, err := os.Stat(path)
+	switch {
+	case err == nil:
+		if info.IsDir() {
+			return false, nil // already a directory, nothing to do
+		}
 		return false, fmt.Errorf("%w: %q", ErrNotADirectory, path)
+
+	case !errors.Is(err, os.ErrNotExist):
+		// Anything other than "not there" is a real problem, most often a
+		// permission error, and must not be mistaken for a missing directory.
+		return false, fmt.Errorf("fspath: inspect %q: %w", path, err)
 	}
 
 	if err = os.MkdirAll(path, perm); err != nil {
