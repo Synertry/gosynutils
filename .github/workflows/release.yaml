@@ -39,6 +39,7 @@ jobs:
       - name: Create & Push Tag
         env:
           NEXT_TAG: ${{ steps.semver.outputs.version_tag }}
+          REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.PAT }} # Personal Access Token with repo permissions for pushing tags and creating releases
         run: |
           # Check if tag already exists (idempotency)
@@ -47,13 +48,43 @@ jobs:
             exit 0
           fi
 
+          # Capture the previous tag before creating the new one, for the changelog range.
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
           # 1. Create the Git Tag
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
           git push origin "$NEXT_TAG"
 
-          # 2. Create GitHub Release (using gh CLI)
-          # --generate-notes auto-fills the changelog based on PRs/Commits
+          # 2. Build the changelog before publishing anything. notify.yaml fires
+          # the instant a release is published (release: published), so the
+          # body must already be final - editing it afterward would race
+          # notify.yaml's own `gh release view` read.
+          NOTES="- Initial release"
+          if [ -n "$PREV_TAG" ]; then
+            COMPARE_JSON=$(gh api "repos/${REPO}/compare/${PREV_TAG}...${NEXT_TAG}" 2>/dev/null || true)
+            if [ -n "$COMPARE_JSON" ]; then
+              NOTES=$(printf '%s' "$COMPARE_JSON" | jq -r --arg repo_url "https://github.com/${REPO}" '
+                (.commits // [])
+                | reverse
+                | map(
+                    ((.commit.message | split("\n")[0]) | gsub("[][]"; "")) as $raw
+                    | ([ $raw | scan("#([0-9]+)") ] | (.[-1][0] // null)) as $pr
+                    | ($raw | sub(" *[(]#[0-9]+[)] *$"; "")) as $title
+                    | "- " + $title + (
+                        if $pr != null
+                        then " ([#\($pr)](\($repo_url)/pull/\($pr)))"
+                        else " ([\(.sha[0:7])](\(.html_url)))"
+                        end
+                      )
+                  )
+                | join("\n")
+              ' 2>/dev/null)
+              [ -z "$NOTES" ] && NOTES="- Initial release"
+            fi
+          fi
+
+          # 3. Create GitHub Release with the already-formatted changelog
           echo "Creating GitHub Release..."
-          gh release create "$NEXT_TAG" --generate-notes --title "$NEXT_TAG"
+          gh release create "$NEXT_TAG" --notes "$NOTES" --title "$NEXT_TAG"
