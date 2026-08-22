@@ -17,10 +17,10 @@ import (
 	"github.com/Synertry/gosynutils/fspath"
 )
 
-func coreTestCheck(t *testing.T) (base string, dir string, pathfile string, non string) {
+func coreTestCheck(t *testing.T) (dir string, pathfile string, non string) {
 	var err error
 
-	base = t.TempDir()
+	base := t.TempDir()
 
 	pathfile = filepath.Join(base, "file.txt")
 	if err = file.TouchFile(pathfile); err != nil {
@@ -37,15 +37,11 @@ func coreTestCheck(t *testing.T) (base string, dir string, pathfile string, non 
 }
 
 func TestCheck(t *testing.T) {
-	base, dir, pathFile, nonExistent := coreTestCheck(t)
+	t.Parallel()
+	dir, pathFile, nonExistent := coreTestCheck(t)
 	if nonExistent == "" {
 		t.Fatal("failed to create test files")
 	}
-	defer func(path string) {
-		if err := os.RemoveAll(path); err != nil {
-			t.Logf("failed to clean up test directory: %v", err)
-		}
-	}(base)
 
 	tests := map[string]struct {
 		path       string
@@ -71,6 +67,7 @@ func TestCheck(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			gotExists, err := fspath.Check(tc.path)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Check() error = %v, wantErr %v", err, tc.wantErr)
@@ -83,15 +80,11 @@ func TestCheck(t *testing.T) {
 }
 
 func TestCheckDir(t *testing.T) {
-	base, dir, pathFile, nonExistent := coreTestCheck(t)
+	t.Parallel()
+	dir, pathFile, nonExistent := coreTestCheck(t)
 	if nonExistent == "" {
 		t.Fatal("failed to create test files")
 	}
-	defer func(path string) {
-		if err := os.RemoveAll(path); err != nil {
-			t.Logf("failed to clean up test directory: %v", err)
-		}
-	}(base)
 
 	tests := map[string]struct {
 		path    string
@@ -117,6 +110,7 @@ func TestCheckDir(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			gotDir, err := fspath.CheckDir(tc.path)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("CheckDir() error = %v, wantErr %v", err, tc.wantErr)

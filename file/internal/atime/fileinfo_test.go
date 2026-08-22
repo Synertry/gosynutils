@@ -18,6 +18,7 @@ import (
 )
 
 func TestStat(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 	existingFile := filepath.Join(tmpDir, "existing.txt")
 	if err := os.WriteFile(existingFile, []byte("content"), 0644); err != nil {
@@ -48,6 +49,7 @@ func TestStat(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := atime.Stat(tt.path)
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) {
@@ -67,6 +69,7 @@ func TestStat(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
+	t.Parallel()
 	tmpDir := t.TempDir()
 	f := filepath.Join(tmpDir, "test.txt")
 	if err := os.WriteFile(f, []byte("test"), 0644); err != nil {
@@ -89,6 +92,7 @@ func TestGet(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got := atime.Get(tt.fi)
 			if got.IsZero() {
 				t.Error("Get() returned zero time")

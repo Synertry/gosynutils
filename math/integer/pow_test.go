@@ -15,6 +15,7 @@ import (
 )
 
 func TestPow(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		base     int
 		exponent int
@@ -49,6 +50,7 @@ func TestPow(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := integer.Pow(tc.base, tc.exponent)
 			if got != tc.want {
 				t.Errorf("expected: %d, got: %d\n", tc.want, got)

@@ -18,6 +18,7 @@ import (
 )
 
 func TestGetStat(t *testing.T) { //nolint:gocognit
+	t.Parallel()
 	tests := map[string]struct {
 		setup     func(dir string) (string, error)
 		wantSize  int64
@@ -95,6 +96,7 @@ func TestGetStat(t *testing.T) { //nolint:gocognit
 		}
 
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			// Test GetSize
 			gotSize, sErr := file.GetSize(path)
 			if (sErr != nil) != tc.wantErr {

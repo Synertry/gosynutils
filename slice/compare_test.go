@@ -15,6 +15,7 @@ import (
 )
 
 func TestContains(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		slice []int
 		value int
@@ -49,6 +50,7 @@ func TestContains(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			//goland:noinspection GoDeprecation
 			got := slice.Contains(tc.slice, tc.value) // We are testing deprecated function here. Don't remove it
 			if got != tc.want {

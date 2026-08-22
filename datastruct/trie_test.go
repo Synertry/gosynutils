@@ -110,6 +110,7 @@ func coreTestTrie(t *testing.T, safe bool, tests map[string]struct { //nolint:go
 }) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			defer func() {
 				if r := recover(); r != nil {
 					if !tc.doesPanic {
@@ -174,6 +175,7 @@ func coreTestTrie(t *testing.T, safe bool, tests map[string]struct { //nolint:go
 }
 
 func TestTrie(t *testing.T) {
+	t.Parallel()
 	// Table-driven test cases
 	tests := getTestTableTrie()
 
@@ -194,6 +196,7 @@ func TestTrie(t *testing.T) {
 }
 
 func TestTrieSafe(t *testing.T) {
+	t.Parallel()
 	// Table-driven test cases
 	tests := getTestTableTrie()
 

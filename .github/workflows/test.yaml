@@ -11,7 +11,7 @@ on:
       go-version:
         required: false
         type: string
-        description: "Specific Go version (e.g., 1.24.x)"
+        description: "Specific Go version (e.g., 1.27.x)"
       go-version-file:
         required: false
         type: string

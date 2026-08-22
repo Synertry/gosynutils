@@ -77,14 +77,14 @@ jobs:
     uses: ./.github/workflows/lint.yaml
 
   test:
-    name: Test {{ matrix.go-version }} on ${{ matrix.os }}
+    name: Test ${{ matrix.go-version }} on ${{ matrix.os }}
     needs: lint
     permissions:
       contents: read
     strategy:
       fail-fast: true # Cancel all jobs if one fails
       matrix:
-        go-version: ['1.26.x']
+        go-version: ['1.27.x']
         include:
           - os: ubuntu-latest
             go-build: ~/.cache/go-build
@@ -114,7 +114,7 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        go-version: ['1.26.x']
+        go-version: ['1.27.x']
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1

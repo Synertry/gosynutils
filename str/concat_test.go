@@ -19,6 +19,7 @@ import (
 )
 
 func TestConcat(t *testing.T) {
+	t.Parallel()
 	const maxTestArrLen = 100
 
 	type test struct {
@@ -44,6 +45,7 @@ func TestConcat(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := str.Concat(tc.input...)
 			if got != tc.want {
 				t.Errorf("expected: %s, got: %s\n", tc.want, got)

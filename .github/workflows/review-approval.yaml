@@ -36,18 +36,24 @@ jobs:
       - name: Extract Review Event Data
         id: review_data
         if: github.event_name == 'pull_request_review' && github.event.review.state == 'approved'
+        env:
+          HEAD_REF_VALUE: ${{ github.event.pull_request.head.ref }}
         run: |
           echo "TARGET_SHA=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
           echo "BASE_REF=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
-          echo "HEAD_REF=${{ github.event.pull_request.head.ref }}" >> "$GITHUB_OUTPUT"
+          echo "HEAD_REF=$HEAD_REF_VALUE" >> "$GITHUB_OUTPUT"
+          echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
 
       - name: Extract Label Event Data
         id: label_data
         if: github.event_name == 'pull_request' && github.event.label.name == 'status/approved'
+        env:
+          HEAD_REF_VALUE: ${{ github.event.pull_request.head.ref }}
         run: |
           echo "TARGET_SHA=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
           echo "BASE_REF=${{ github.event.pull_request.base.ref }}" >> "$GITHUB_OUTPUT"
-          echo "HEAD_REF=${{ github.event.pull_request.head.ref }}" >> "$GITHUB_OUTPUT"
+          echo "HEAD_REF=$HEAD_REF_VALUE" >> "$GITHUB_OUTPUT"
+          echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
 
       - name: Verify Comment Author Permission
         id: verify_commenter
@@ -78,6 +84,7 @@ jobs:
           echo "TARGET_SHA=$(echo "$PR_JSON" | jq -r '.headRefOid')" >> "$GITHUB_OUTPUT"
           echo "BASE_REF=$(echo "$PR_JSON" | jq -r '.baseRefName')" >> "$GITHUB_OUTPUT"
           echo "HEAD_REF=$(echo "$PR_JSON" | jq -r '.headRefName')" >> "$GITHUB_OUTPUT"
+          echo "PR_NUMBER=$PR_NUM" >> "$GITHUB_OUTPUT"
 
       - name: Extract Manual Dispatch Data
         id: dispatch_data
@@ -91,6 +98,7 @@ jobs:
           echo "TARGET_SHA=$(echo "$PR_JSON" | jq -r '.headRefOid')" >> "$GITHUB_OUTPUT"
           echo "BASE_REF=$(echo "$PR_JSON" | jq -r '.baseRefName')" >> "$GITHUB_OUTPUT"
           echo "HEAD_REF=$(echo "$PR_JSON" | jq -r '.headRefName')" >> "$GITHUB_OUTPUT"
+          echo "PR_NUMBER=$PR_NUM" >> "$GITHUB_OUTPUT"
 
       - name: Validate Branch Constraints
         id: validate
@@ -99,6 +107,7 @@ jobs:
           TARGET_SHA: ${{ steps.review_data.outputs.TARGET_SHA || steps.label_data.outputs.TARGET_SHA || steps.comment_data.outputs.TARGET_SHA || steps.dispatch_data.outputs.TARGET_SHA }}
           BASE_REF: ${{ steps.review_data.outputs.BASE_REF || steps.label_data.outputs.BASE_REF || steps.comment_data.outputs.BASE_REF || steps.dispatch_data.outputs.BASE_REF }}
           HEAD_REF: ${{ steps.review_data.outputs.HEAD_REF || steps.label_data.outputs.HEAD_REF || steps.comment_data.outputs.HEAD_REF || steps.dispatch_data.outputs.HEAD_REF }}
+          PR_NUMBER: ${{ steps.review_data.outputs.PR_NUMBER || steps.label_data.outputs.PR_NUMBER || steps.comment_data.outputs.PR_NUMBER || steps.dispatch_data.outputs.PR_NUMBER }}
         run: |
           if [ -z "$TARGET_SHA" ]; then
             echo "Trigger condition not met. Halting execution."
@@ -111,6 +120,7 @@ jobs:
           fi
           
           echo "validated_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          echo "validated_pr=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         if: steps.validate.outputs.validated_sha != ''
@@ -127,3 +137,22 @@ jobs:
         run: |
           # Push the exact commit SHA of the approved PR head directly to the release reference
           git push origin ${{ steps.validate.outputs.validated_sha }}:refs/heads/release
+
+      - name: Sync approval labels
+        # Independent of the main->release routing check: status/approved can be
+        # applied to any PR (e.g. a large main-targeting PR labeled by
+        # pull-request-size.yaml), not only ones eligible for the fast-forward
+        # push. The push itself stays gated on validated_sha below.
+        if: |
+          steps.validate.outputs.validated_sha != '' ||
+          (github.event_name == 'pull_request' && github.event.label.name == 'status/approved')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # not PAT: label edits shouldn't re-trigger this workflow's own `labeled` listener
+          PR_NUMBER: ${{ steps.validate.outputs.validated_pr || steps.label_data.outputs.PR_NUMBER }}
+        run: |
+          # status/approved is the terminal state: ensure it's set and drop the
+          # two pending-review labels, regardless of which trigger got us here.
+          gh pr edit "$PR_NUMBER" --repo "${{ github.repository }}" \
+            --add-label "status/approved" \
+            --remove-label "status/approval-pending" \
+            --remove-label "status/review-needed"

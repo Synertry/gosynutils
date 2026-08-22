@@ -254,3 +254,6 @@ $RECYCLE.BIN/
 
 
 ### Project specific ignores ###
+
+# Until more collaboration, the .idea folder stays out of VCS: https://www.reddit.com/r/pycharm/comments/ogx5e9/poll_gitignore_the_idea_folder_yes_or_no/
+.idea/

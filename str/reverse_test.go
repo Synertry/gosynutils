@@ -18,6 +18,7 @@ import (
 )
 
 func TestReverse(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		input string
 		want  string
@@ -50,6 +51,7 @@ func TestReverse(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := str.Reverse(tc.input)
 			if got != tc.want {
 				t.Errorf("expected: %q, got: %q\n", tc.want, got)
