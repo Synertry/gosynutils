@@ -64,6 +64,7 @@ jobs:
           if [ -z "$PREV_TAG" ]; then
             NOTES="- Initial release"
           else
+            COMPARE_URL="https://github.com/${REPO}/compare/${PREV_TAG}...${NEXT_TAG}"
             NOTES=""
             COMPARE_JSON=$(gh api "repos/${REPO}/compare/${PREV_TAG}...${NEXT_TAG}") || true
             if [ -n "$COMPARE_JSON" ]; then
@@ -86,7 +87,11 @@ jobs:
             fi
             if [ -z "$NOTES" ]; then
               echo "::warning::Failed to build changelog via compare API; falling back to a compare link."
-              NOTES="_Changelog unavailable. See [${PREV_TAG}...${NEXT_TAG}](https://github.com/${REPO}/compare/${PREV_TAG}...${NEXT_TAG})._"
+              NOTES="_Changelog unavailable. See [${PREV_TAG}...${NEXT_TAG}](${COMPARE_URL})._"
+            else
+              # gh api's compare endpoint caps .commits at 250 regardless of the
+              # true range size, so always link the full diff in case of silent truncation.
+              NOTES="${NOTES}"$'\n\n'"**Full changelog**: ${COMPARE_URL}"
             fi
           fi
 

@@ -147,7 +147,7 @@ jobs:
           steps.validate.outputs.validated_sha != '' ||
           (github.event_name == 'pull_request' && github.event.label.name == 'status/approved')
         env:
-          GH_TOKEN: ${{ secrets.PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # not PAT: label edits shouldn't re-trigger this workflow's own `labeled` listener
           PR_NUMBER: ${{ steps.validate.outputs.validated_pr || steps.label_data.outputs.PR_NUMBER }}
         run: |
           # status/approved is the terminal state: ensure it's set and drop the
