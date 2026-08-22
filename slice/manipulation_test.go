@@ -20,6 +20,7 @@ import (
 
 // TestRemoveIndex tests the RemoveIndex function to ensure it correctly removes an element at a specified index
 func TestRemoveIndex(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		slice []int
 		index int
@@ -64,6 +65,7 @@ func TestRemoveIndex(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := slice.RemoveIndex(tc.slice, tc.index)
 			if len(got) != len(tc.want) {
 				t.Errorf("expected length: %d, got: %d\n", len(tc.want), len(got))
@@ -82,6 +84,7 @@ func TestRemoveIndex(t *testing.T) {
 // TestRemoveElements tests the RemoveElements function to ensure
 // it correctly removes all occurrences of a specified element from the slice.
 func TestRemoveElements(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		slice []int
 		elem  int
@@ -121,6 +124,7 @@ func TestRemoveElements(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := slice.RemoveElements(tc.slice, tc.elem)
 			if len(got) != len(tc.want) {
 				t.Errorf("expected length: %d, got: %d\n", len(tc.want), len(got))
@@ -137,6 +141,7 @@ func TestRemoveElements(t *testing.T) {
 }
 
 func TestInvert(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		slice []int
 		want  []int
@@ -157,6 +162,7 @@ func TestInvert(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := slice.Invert(tc.slice)
 			if len(got) != len(tc.want) {
 				t.Errorf("expected length: %d, got: %d\n", len(tc.want), len(got))

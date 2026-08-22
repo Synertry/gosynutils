@@ -20,6 +20,7 @@ import (
 // TestPrettyPrintSlice tests the PrettyPrint function to ensure it formats
 // the input data structure into a human-readable JSON format.
 func TestPrettyPrintSlice(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		input []string
 		want  string
@@ -45,6 +46,7 @@ func TestPrettyPrintSlice(t *testing.T) {
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := jsonx.PrettyPrint(tc.input)
 			if got != tc.want {
 				t.Errorf("expected: %s, got: %s\n", tc.want, got) // %q won't display formatting

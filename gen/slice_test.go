@@ -20,6 +20,7 @@ import (
 // TestSliceStrings tests if the SliceStrings function has the expected length of the slice
 // and if the strings in the slice have the expected incrementing lengths depending on the index.
 func TestSliceStrings(t *testing.T) {
+	t.Parallel()
 	const maxTestArrLenExp = 4
 
 	type test struct {
@@ -37,6 +38,7 @@ func TestSliceStrings(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			slice := gen.SliceStrings(tc.len)
 
 			if len(slice) != tc.len {
@@ -60,6 +62,7 @@ func TestSliceStrings(t *testing.T) {
 // TestSliceStringsFixed tests if the SliceStringsFixed function has the expected length of the slice
 // and if the strings in the slice have the expected fixed length.
 func TestSliceStringsFixed(t *testing.T) {
+	t.Parallel()
 	const (
 		maxTestArrLenExp = 4
 		maxTestStrLenExp = 4
@@ -87,6 +90,7 @@ func TestSliceStringsFixed(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			slice := gen.SliceStringsFixed(tc.arrLen, tc.strLen)
 
 			if len(slice) != tc.arrLen {

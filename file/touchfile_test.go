@@ -6,7 +6,7 @@
  *           https://www.boost.org/LICENSE_1_0.txt)
  */
 
-package file_test //nolint:cyclop // This unfortunately needs this level of complexity to test the stat functions
+package file_test
 
 import (
 	"errors"
@@ -20,9 +20,11 @@ import (
 // TestTouchFile tests the TouchFile function that it ensures a file exists.
 // So it is like the Unix touch command.
 func TestTouchFile(t *testing.T) {
+	t.Parallel()
 	var pathTempFile = filepath.Join(t.TempDir(), "tempfile_for_touchfile_test.tmp")
 
 	t.Run("TouchFile", func(t *testing.T) {
+		t.Parallel()
 		err := file.TouchFile(pathTempFile)
 		if err != nil {
 			t.Errorf("TouchFile failed: %v", err)

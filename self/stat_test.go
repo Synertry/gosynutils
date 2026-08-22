@@ -17,6 +17,7 @@ import (
 )
 
 func TestStat(t *testing.T) {
+	t.Parallel()
 	pathExe, err := os.Executable()
 	if err != nil {
 		t.Errorf("failed get executeable to setup test: %v", err)
@@ -25,6 +26,7 @@ func TestStat(t *testing.T) {
 	pathExeDir := filepath.Dir(pathExe)
 
 	t.Run("PathExe", func(t *testing.T) {
+		t.Parallel()
 		selfPathExe := self.GetPathExe()
 		if pathExe != selfPathExe {
 			t.Errorf("expected: %q, got: %q\n", pathExe, selfPathExe)
@@ -32,6 +34,7 @@ func TestStat(t *testing.T) {
 		}
 	})
 	t.Run("PathExeDir", func(t *testing.T) {
+		t.Parallel()
 		selfPathExeDir := self.GetPathExeDir()
 		if pathExeDir != selfPathExeDir {
 			t.Errorf("expected: %q, got: %q\n", pathExeDir, selfPathExeDir)

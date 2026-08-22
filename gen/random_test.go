@@ -18,7 +18,9 @@ import (
 // TestGetRand tests the GetRand function to check whether we successfully created a *[rand.Rand] object
 // and that it is not nil. This is a basic test to ensure the function works as
 func TestGetRand(t *testing.T) {
+	t.Parallel()
 	t.Run("GetRand", func(t *testing.T) {
+		t.Parallel()
 		random := gen.GetRand()
 		if !isTypeRand(random) {
 			t.Errorf("expected: type *rand.Rand, got %T\n", random)

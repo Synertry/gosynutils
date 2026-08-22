@@ -16,6 +16,7 @@ import (
 )
 
 func TestCountDigits(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		input int
 		want  int
@@ -57,6 +58,7 @@ func TestCountDigits(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := integer.CountDigits(tc.input)
 			if got != tc.want {
 				t.Errorf("expected: %d, got: %d\n", tc.want, got)

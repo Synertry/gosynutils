@@ -17,6 +17,7 @@ import (
 )
 
 func TestString_Len(t *testing.T) {
+	t.Parallel()
 	const maxTestArrLen = 100
 
 	type test struct {
@@ -38,6 +39,7 @@ func TestString_Len(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			got := len(tc.input)
 			if got != tc.want {
 				t.Errorf("expected: %d, got: %d", tc.want, got)
@@ -49,6 +51,7 @@ func TestString_Len(t *testing.T) {
 }
 
 func TestString_Pattern(t *testing.T) {
+	t.Parallel()
 	// random := gen.GetRand()
 	sLen := gen.GetRand().IntN(100)
 	str := gen.String(sLen)
@@ -61,7 +64,8 @@ func TestString_Pattern(t *testing.T) {
 	}
 }
 
-func TestString_Race(_ *testing.T) {
+func TestString_Race(t *testing.T) {
+	t.Parallel()
 	const numGoroutines = 10
 	const numIterations = 100
 
