@@ -57,13 +57,15 @@ jobs:
           git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
           git push origin "$NEXT_TAG"
 
-          # 2. Build the changelog before publishing anything. notify.yaml fires
-          # the instant a release is published (release: published), so the
-          # body must already be final - editing it afterward would race
-          # notify.yaml's own `gh release view` read.
-          NOTES="- Initial release"
-          if [ -n "$PREV_TAG" ]; then
-            COMPARE_JSON=$(gh api "repos/${REPO}/compare/${PREV_TAG}...${NEXT_TAG}" 2>/dev/null || true)
+          # 2. Build the changelog before publishing anything. notify.yaml
+          # fires the instant a release is published (release: published),
+          # so the body must already be final. Editing it afterward would
+          # race notify.yaml's own `gh release view` read.
+          if [ -z "$PREV_TAG" ]; then
+            NOTES="- Initial release"
+          else
+            NOTES=""
+            COMPARE_JSON=$(gh api "repos/${REPO}/compare/${PREV_TAG}...${NEXT_TAG}") || true
             if [ -n "$COMPARE_JSON" ]; then
               NOTES=$(printf '%s' "$COMPARE_JSON" | jq -r --arg repo_url "https://github.com/${REPO}" '
                 (.commits // [])
@@ -80,8 +82,11 @@ jobs:
                       )
                   )
                 | join("\n")
-              ' 2>/dev/null)
-              [ -z "$NOTES" ] && NOTES="- Initial release"
+              ') || true
+            fi
+            if [ -z "$NOTES" ]; then
+              echo "::warning::Failed to build changelog via compare API; falling back to a compare link."
+              NOTES="_Changelog unavailable. See [${PREV_TAG}...${NEXT_TAG}](https://github.com/${REPO}/compare/${PREV_TAG}...${NEXT_TAG})._"
             fi
           fi
 
