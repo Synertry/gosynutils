@@ -84,7 +84,7 @@ jobs:
     strategy:
       fail-fast: true # Cancel all jobs if one fails
       matrix:
-        go-version: ['1.26.x']
+        go-version: ['1.27.x']
         include:
           - os: ubuntu-latest
             go-build: ~/.cache/go-build
@@ -114,7 +114,7 @@ jobs:
       pull-requests: write
     strategy:
       matrix:
-        go-version: ['1.26.x']
+        go-version: ['1.27.x']
     steps:
       - name: Checkout code
         uses: actions/checkout@v6.0.2
