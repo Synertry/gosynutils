@@ -6,6 +6,7 @@
  *           https://www.boost.org/LICENSE_1_0.txt)
  */
 
+// Package fspath checks path existence: Check and CheckDir.
 package fspath
 
 import (
@@ -13,14 +14,19 @@ import (
 	"os"
 )
 
-// Check checks existence of provided path, returns error if error is not *PathError
-func Check(path string) (pathExits bool, err error) {
-	if _, err = os.Stat(path); err == nil { // exists
-		pathExits = true
-	} else if errors.Is(err, os.ErrNotExist) { //nolint:gocritic // we need both branches to display that there would be a logic difference
-		pathExits = false // does not exist
+// Check reports whether the file or directory at path exists. A
+// genuinely missing path (os.ErrNotExist) reports pathExists=false with
+// err=nil. any other stat failure (permission denied, and so on) is
+// returned as err so the caller can tell "does not exist" apart from
+// "could not tell".
+func Check(path string) (pathExists bool, err error) {
+	if _, statErr := os.Stat(path); statErr == nil { // exists
+		pathExists = true
+	} else if errors.Is(statErr, os.ErrNotExist) {
+		pathExists = false // does not exist, not an error
 	} else { // possible permission issue
-		pathExits = false
+		pathExists = false
+		err = statErr
 		// Schrödinger: file may or may not exist. See err for details.
 		// SOURCE: https://stackoverflow.com/a/12518877/5516320
 	}
