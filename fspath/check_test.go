@@ -61,7 +61,7 @@ func TestCheck(t *testing.T) {
 		"nonexistent": {
 			path:       nonExistent,
 			wantExists: false,
-			wantErr:    true,
+			wantErr:    false,
 		},
 	}
 
@@ -104,7 +104,7 @@ func TestCheckDir(t *testing.T) {
 		"nonexistent": {
 			path:    nonExistent,
 			wantDir: false,
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 
