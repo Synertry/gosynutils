@@ -32,22 +32,27 @@ func EnsureDir(path string, perm os.FileMode) (created bool, err error) {
 		return false, ErrEmptyPath
 	}
 
-	// CheckDir's err is non-nil whenever path does not exist (Check never
-	// clears it), so this single call also tells us "missing" apart from
-	// "exists as a file" and "permission problem" without a second stat.
-	isDir, err := CheckDir(path)
+	// Check tells missing (false, nil) apart from a real stat failure
+	// (false, err) and from an existing path (true, nil). CheckDir alone
+	// can't: it collapses "missing" and "exists as a file" into the same
+	// (false, nil) result, so it can't drive this decision by itself.
+	exists, err := Check(path)
 	switch {
-	case err == nil:
-		if !isDir {
-			return false, fmt.Errorf("%w: %q", ErrNotADirectory, path)
-		}
-		return false, nil
-	case !errors.Is(err, os.ErrNotExist):
+	case err != nil:
 		return false, fmt.Errorf("fspath: inspect %q: %w", path, err)
+	case !exists:
+		if err = os.MkdirAll(path, perm); err != nil {
+			return false, fmt.Errorf("fspath: create %q: %w", path, err)
+		}
+		return true, nil
 	}
 
-	if err = os.MkdirAll(path, perm); err != nil {
-		return false, fmt.Errorf("fspath: create %q: %w", path, err)
+	info, err := os.Stat(path)
+	if err != nil {
+		return false, fmt.Errorf("fspath: inspect %q: %w", path, err)
 	}
-	return true, nil
+	if !info.IsDir() {
+		return false, fmt.Errorf("%w: %q", ErrNotADirectory, path)
+	}
+	return false, nil
 }
