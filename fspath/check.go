@@ -19,7 +19,8 @@ import (
 // false: a missing path returns an error wrapping [os.ErrNotExist], any
 // other failure such as permission denied returns that error unchanged.
 // Callers separate the two with [errors.Is] against [os.ErrNotExist].
-// CheckDir and EnsureDir rely on this three-way contract, keep it intact.
+// CheckDir applies this same error contract against its own [os.Stat]
+// call rather than calling Check, keep the two consistent.
 func Check(path string) (pathExists bool, err error) {
 	if _, err = os.Stat(path); err == nil { // exists
 		pathExists = true
