@@ -9,6 +9,7 @@
 package fspath_test
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -47,6 +48,7 @@ func TestCheck(t *testing.T) {
 		path       string
 		wantExists bool
 		wantErr    bool
+		wantErrIs  error
 	}{
 		"dir": {
 			path:       dir,
@@ -61,7 +63,8 @@ func TestCheck(t *testing.T) {
 		"nonexistent": {
 			path:       nonExistent,
 			wantExists: false,
-			wantErr:    false,
+			wantErr:    true,
+			wantErrIs:  os.ErrNotExist,
 		},
 	}
 
@@ -71,6 +74,9 @@ func TestCheck(t *testing.T) {
 			gotExists, err := fspath.Check(tc.path)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Check() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if tc.wantErrIs != nil && !errors.Is(err, tc.wantErrIs) {
+				t.Errorf("Check() error = %v, want errors.Is %v", err, tc.wantErrIs)
 			}
 			if gotExists != tc.wantExists {
 				t.Errorf("Check() gotExists = %v, want %v", gotExists, tc.wantExists)
@@ -87,9 +93,10 @@ func TestCheckDir(t *testing.T) {
 	}
 
 	tests := map[string]struct {
-		path    string
-		wantDir bool
-		wantErr bool
+		path      string
+		wantDir   bool
+		wantErr   bool
+		wantErrIs error
 	}{
 		"dir": {
 			path:    dir,
@@ -102,9 +109,10 @@ func TestCheckDir(t *testing.T) {
 			wantErr: false,
 		},
 		"nonexistent": {
-			path:    nonExistent,
-			wantDir: false,
-			wantErr: false,
+			path:      nonExistent,
+			wantDir:   false,
+			wantErr:   true,
+			wantErrIs: os.ErrNotExist,
 		},
 	}
 
@@ -114,6 +122,9 @@ func TestCheckDir(t *testing.T) {
 			gotDir, err := fspath.CheckDir(tc.path)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("CheckDir() error = %v, wantErr %v", err, tc.wantErr)
+			}
+			if tc.wantErrIs != nil && !errors.Is(err, tc.wantErrIs) {
+				t.Errorf("CheckDir() error = %v, want errors.Is %v", err, tc.wantErrIs)
 			}
 			if gotDir != tc.wantDir {
 				t.Errorf("CheckDir() gotDir = %v, want %v", gotDir, tc.wantDir)
