@@ -39,17 +39,9 @@ func Check(path string) (pathExists bool, err error) {
 // [os.ErrNotExist] and any other stat failure returns false with that
 // error.
 func CheckDir(path string) (isDir bool, err error) {
-	var exists bool
-	exists, err = Check(path)
-	if !exists {
-		return // error no need to check further
+	info, err := os.Stat(path)
+	if err != nil {
+		return false, err
 	}
-
-	var info os.FileInfo
-	if info, err = os.Stat(path); err == nil {
-		if info.IsDir() {
-			isDir = true
-		}
-	}
-	return // streamlined return values
+	return info.IsDir(), nil
 }
