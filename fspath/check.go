@@ -14,38 +14,35 @@ import (
 	"os"
 )
 
-// Check reports whether the file or directory at path exists. A
-// genuinely missing path (os.ErrNotExist) reports pathExists=false with
-// err=nil. any other stat failure (permission denied, and so on) is
-// returned as err so the caller can tell "does not exist" apart from
-// "could not tell".
+// Check reports whether the file or directory at path exists.
+// The error mirrors the underlying [os.Stat] call whenever pathExists is
+// false: a missing path returns an error wrapping [os.ErrNotExist], any
+// other failure such as permission denied returns that error unchanged.
+// Callers separate the two with [errors.Is] against [os.ErrNotExist].
+// CheckDir applies this same error contract against its own [os.Stat]
+// call rather than calling Check, keep the two consistent.
 func Check(path string) (pathExists bool, err error) {
-	if _, statErr := os.Stat(path); statErr == nil { // exists
+	if _, err = os.Stat(path); err == nil { // exists
 		pathExists = true
-	} else if errors.Is(statErr, os.ErrNotExist) {
-		pathExists = false // does not exist, not an error
+	} else if errors.Is(err, os.ErrNotExist) { //nolint:gocritic // we need both branches to display that there would be a logic difference
+		pathExists = false // does not exist
 	} else { // possible permission issue
 		pathExists = false
-		err = statErr
 		// Schrödinger: file may or may not exist. See err for details.
 		// SOURCE: https://stackoverflow.com/a/12518877/5516320
 	}
 	return
 }
 
-// CheckDir checks if path exists and leads to a directory
+// CheckDir reports whether path exists and leads to a directory.
+// A directory returns (true, nil), an existing non-directory returns
+// (false, nil), a missing path returns false with an error wrapping
+// [os.ErrNotExist] and any other stat failure returns false with that
+// error.
 func CheckDir(path string) (isDir bool, err error) {
-	var exists bool
-	exists, err = Check(path)
-	if !exists {
-		return // error no need to check further
+	info, err := os.Stat(path)
+	if err != nil {
+		return false, err
 	}
-
-	var info os.FileInfo
-	if info, err = os.Stat(path); err == nil {
-		if info.IsDir() {
-			isDir = true
-		}
-	}
-	return // streamlined return values
+	return info.IsDir(), nil
 }
