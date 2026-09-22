@@ -26,6 +26,8 @@ jobs:
           echo "Release data fetched."
 
       - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
           # 1. Read data from the JSON file we just created
           TAG=$(jq -r .tagName release.json)
@@ -61,7 +63,9 @@ jobs:
               }]
             }' > payload.json
 
-          # 4. Send to Discord
-          curl -H "Content-Type: application/json" \
+          # 4. Send to Discord. --fail-with-body surfaces Discord's error body
+          # and a nonzero exit on 4xx/5xx instead of silently succeeding.
+          curl --fail-with-body --show-error --silent --max-time 15 \
+               -H "Content-Type: application/json" \
                -d @payload.json \
-               "${{ secrets.DISCORD_WEBHOOK }}"
+               "$DISCORD_WEBHOOK"
